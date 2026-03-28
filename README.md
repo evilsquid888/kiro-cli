@@ -63,9 +63,15 @@ The tutorial covers:
 - **Slash Commands** — All available commands (`/help`, `/context`, `/model`, `/agent`, `/tools`, `/mcp`, `/code`, etc.)
 - **Steering Files** — Configuring project, tech, and structure docs
 - **Agent Configuration** — Creating and customizing agents
-- **MCP Servers** — Setting up Model Context Protocol integrations
+- **Spec-Driven Development** — Using specs to guide code generation
+- **MCP & Tools Compared** — MCP server setup and tool comparison across platforms
 - **Settings** — Configuring Kiro CLI behavior
+- **Common Workflows** — Practical recipes for everyday tasks
 - **Kiro CLI vs Claude Code** — Feature comparison reference
+- **Philosophy & Overview** — Design philosophy and high-level concepts
+- **Skills & Portability** — Migrating skills and using agentskills.io
+- **Hooks Deep Dive** — Advanced hook configuration for both Claude Code and Kiro
+- **Config Files Compared** — CLAUDE.md vs .kiro/steering side-by-side
 
 ## License
 
