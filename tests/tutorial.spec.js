@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+const { test, expect } = require('@playwright/test');
 
 test.describe('Kiro CLI Tutorial', () => {
 
@@ -163,5 +163,67 @@ test.describe('Kiro CLI Tutorial', () => {
       const section = page.locator(`#section-${id}`);
       await expect(section).toHaveCount(1);
     }
+  });
+
+  // New section tests
+
+  test('new sections are navigable', async ({ page }) => {
+    await page.goto('/');
+    const newSections = ['philosophy', 'skills-portability', 'hooks-deep-dive', 'config-compared', 'mcp-tools'];
+    for (const id of newSections) {
+      await page.click(`#nav-list a[data-id="${id}"]`);
+      const section = page.locator(`#section-${id}`);
+      await expect(section).toHaveClass(/active/);
+      await expect(page.locator(`#nav-list a[data-id="${id}"]`)).toHaveClass(/active/);
+      const text = await section.textContent();
+      expect(text.length).toBeGreaterThan(50);
+    }
+  });
+
+  test('philosophy section has comparison table', async ({ page }) => {
+    await page.goto('/#philosophy');
+    await expect(page.locator('#section-philosophy')).toHaveClass(/active/);
+    const table = page.locator('#section-philosophy table.comparison');
+    await expect(table).toBeVisible();
+    const content = await page.locator('#section-philosophy').textContent();
+    expect(content).toContain('Design philosophy');
+    expect(content).toContain('Claude Code');
+    expect(content).toContain('Kiro');
+  });
+
+  test('skills portability section covers migration and agentskills.io', async ({ page }) => {
+    await page.goto('/#skills-portability');
+    await expect(page.locator('#section-skills-portability')).toHaveClass(/active/);
+    const content = await page.locator('#section-skills-portability').textContent();
+    expect(content).toContain('agentskills.io');
+    expect(content).toContain('migration');
+  });
+
+  test('hooks deep dive has both Claude Code and Kiro hook examples', async ({ page }) => {
+    await page.goto('/#hooks-deep-dive');
+    await expect(page.locator('#section-hooks-deep-dive')).toHaveClass(/active/);
+    const content = await page.locator('#section-hooks-deep-dive').textContent();
+    expect(content).toContain('Claude Code');
+    expect(content).toContain('Kiro');
+    // Verify both hook config sections are present
+    expect(content).toContain('PostToolUse');
+    expect(content).toContain('agentSpawn');
+  });
+
+  test('config compared covers CLAUDE.md and .kiro/steering', async ({ page }) => {
+    await page.goto('/#config-compared');
+    await expect(page.locator('#section-config-compared')).toHaveClass(/active/);
+    const content = await page.locator('#section-config-compared').textContent();
+    expect(content).toContain('CLAUDE.md');
+    expect(content).toContain('.kiro/steering');
+  });
+
+  test('mcp-tools section has tools table and mentions MCP', async ({ page }) => {
+    await page.goto('/#mcp-tools');
+    await expect(page.locator('#section-mcp-tools')).toHaveClass(/active/);
+    const table = page.locator('#section-mcp-tools table.comparison');
+    await expect(table).toBeVisible();
+    const content = await page.locator('#section-mcp-tools').textContent();
+    expect(content).toContain('MCP');
   });
 });

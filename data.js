@@ -750,5 +750,399 @@ kiro-cli chat --no-interactive --trust-all-tools \\
 `}
 ];
 
+const SECTIONS4 = [
+{id:"philosophy",title:"Philosophy & Overview",content:`
+<h1>Two Philosophies of AI-Assisted Development</h1>
+<p>Claude Code and Kiro represent fundamentally different approaches to AI coding assistance, despite both running on Anthropic's Claude models. Understanding these philosophies helps you pick the right tool for each task — or combine them effectively.</p>
+
+<h2>Claude Code: Power-First</h2>
+<p>Claude Code is a CLI-first, minimal-ceremony tool that treats AI as a co-developer adapting to <em>your</em> workflow. It starts with maximum power and minimal structure, relying on skills and CLAUDE.md to progressively add specialized expertise as needed.</p>
+<ul>
+<li>Raw terminal power — full Unix pipe support, headless scripting, JSON output</li>
+<li>Structure is opt-in via skills, commands, and CLAUDE.md</li>
+<li>Best for: rapid execution, terminal-native workflows, CI/CD automation</li>
+</ul>
+
+<h2>Kiro: Structure-First</h2>
+<p>Kiro enforces structured planning before code generation — transforming vague prompts into formal requirements, designs, and task lists. It starts with maximum structure and uses vibe mode to selectively remove it.</p>
+<ul>
+<li>Spec-driven development: requirements → design → tasks → code</li>
+<li>Rich agent system with JSON configs, hooks, and per-agent permissions</li>
+<li>Best for: complex features, team collaboration, documentation-heavy projects</li>
+</ul>
+
+<h2>Complementary, Not Competitive</h2>
+<div class="note">The most productive workflow emerging among developers combines both: <strong>Kiro's spec-driven planning</strong> to define what to build, then <strong>Claude Code's raw terminal power</strong> to build it fast.</div>
+
+<table class="comparison">
+<tr><th>Dimension</th><th>Claude Code</th><th>Kiro CLI</th></tr>
+<tr><td>Design philosophy</td><td>Minimal ceremony, maximum flexibility</td><td>Structured planning, guided workflows</td></tr>
+<tr><td>Headless / scripted mode</td><td><code>claude -p "prompt"</code> with full stdin/stdout</td><td><code>kiro-cli chat --no-interactive</code></td></tr>
+<tr><td>Custom agents</td><td>Sub-agents via skills and .claude/agents/</td><td>First-class agent system with JSON configs</td></tr>
+<tr><td>NL → shell command</td><td>Via conversation</td><td>Dedicated <code>kiro-cli translate</code> command</td></tr>
+<tr><td>Spec-driven workflow</td><td>Via community plugins (cc-sdd)</td><td>Native (requirements → design → tasks)</td></tr>
+<tr><td>Session persistence</td><td>Automatic</td><td>Manual save/load + resume picker</td></tr>
+</table>
+`},
+
+{id:"skills-portability",title:"Skills & Portability",content:`
+<h1>Skills System & Cross-Tool Portability</h1>
+<p>Both Claude Code and Kiro use a shared skills standard, making expertise portable across tools with zero format changes.</p>
+
+<h2>How Skills Work</h2>
+<p>Skills package domain-specific knowledge into modular <strong>SKILL.md files</strong> — markdown documents with YAML frontmatter. Each skill directory can include:</p>
+<table>
+<tr><th>Path</th><th>Purpose</th></tr>
+<tr><td><code>SKILL.md</code></td><td>Main instructions (required)</td></tr>
+<tr><td><code>scripts/</code></td><td>Executable code referenced by the skill</td></tr>
+<tr><td><code>references/</code></td><td>Supplemental documentation</td></tr>
+<tr><td><code>assets/</code></td><td>Templates, images, fonts</td></tr>
+</table>
+
+<h2>Three-Level Progressive Disclosure</h2>
+<p>Skills use progressive disclosure to manage context efficiently:</p>
+<ol>
+<li><strong>Startup:</strong> Only skill metadata (name + description, ~100 tokens each) loads into the system prompt</li>
+<li><strong>Activation:</strong> When the LLM determines a skill matches, it loads the full SKILL.md body (&lt;5,000 tokens)</li>
+<li><strong>Deep context:</strong> Only when SKILL.md explicitly references additional files do scripts and references enter context</li>
+</ol>
+<div class="note">This means dozens of skills can be installed with negligible overhead. No keyword matching or classifiers — activation uses pure LLM reasoning based on the <code>description</code> field.</div>
+
+<h2>SKILL.md Example</h2>
+<pre><code>---
+name: security-review
+description: Analyzes code for security vulnerabilities. Use when reviewing
+  code for security, before deployment, or when the user mentions audit.
+allowed-tools: Read, Grep, Glob
+---
+# Security Review
+When reviewing code for security:
+1. Check for injection vulnerabilities (SQL, XSS, command injection)
+2. Verify authentication/authorization patterns
+3. Look for exposed secrets or hardcoded credentials</code></pre>
+
+<h2>Storage Locations</h2>
+<table>
+<tr><th>Scope</th><th>Claude Code</th><th>Kiro CLI</th></tr>
+<tr><td>Project-level</td><td><code>.claude/skills/</code></td><td><code>.kiro/skills/</code></td></tr>
+<tr><td>Personal (global)</td><td><code>~/.claude/skills/</code></td><td><code>~/.kiro/skills/</code></td></tr>
+</table>
+
+<h2>The agentskills.io Open Standard</h2>
+<p>The <strong>agentskills.io</strong> standard makes SKILL.md files directly portable between Claude Code, Kiro, Cursor, Gemini CLI, Codex CLI, GitHub Copilot, and more. Migration is literally a file copy:</p>
+<pre><code># Copy a skill from Claude Code to Kiro
+cp -r .claude/skills/my-skill .kiro/skills/
+
+# Copy from Kiro to Claude Code
+cp -r .kiro/skills/my-skill .claude/skills/</code></pre>
+
+<h2>Invocation Controls</h2>
+<p>Two frontmatter flags control how skills are triggered:</p>
+<table>
+<tr><th>Flag</th><th>Effect</th><th>Use Case</th></tr>
+<tr><td><code>disable-model-invocation: true</code></td><td>User-only activation (slash command)</td><td>Deployment, commits — dangerous to auto-trigger</td></tr>
+<tr><td><code>user-invocable: false</code></td><td>AI-only, invisible to users</td><td>Background automation skills</td></tr>
+</table>
+
+<h2>Bridging the Gap</h2>
+<p>Community tools bring each tool's strengths to the other:</p>
+<ul>
+<li><strong>cc-sdd</strong> — brings Kiro's spec-driven workflow to Claude Code via slash commands (<code>/kiro:spec-init</code>, <code>/kiro:spec-requirements</code>)</li>
+<li><strong>claude-kiro</strong> — a Python tool implementing Kiro's methodology as Claude Code commands</li>
+</ul>
+<div class="note">The main migration effort is converting Claude Code's monolithic <code>CLAUDE.md</code> to Kiro's modular steering system, not the skills themselves.</div>
+`},
+
+{id:"hooks-deep-dive",title:"Hooks Deep Dive",content:`
+<h1>Hooks Deep Dive — Event-Driven Automation</h1>
+<p>Both tools offer lifecycle hooks for automation, but their architectures reveal the philosophical split between the tools.</p>
+
+<h2>At a Glance</h2>
+<table class="comparison">
+<tr><th>Aspect</th><th>Claude Code</th><th>Kiro CLI</th></tr>
+<tr><td>Hook events</td><td>4 core events (PreToolUse, PostToolUse, Notification, Stop)</td><td>5 events (agentSpawn, userPromptSubmit, preToolUse, postToolUse, stop)</td></tr>
+<tr><td>Handler types</td><td>4 types: shell command, LLM prompt, sub-agent, HTTP endpoint</td><td>2 types: shell command, agent prompt</td></tr>
+<tr><td>Config location</td><td><code>.claude/settings.json</code> (4 scope levels)</td><td>Agent JSON file or <code>.kiro.hook</code> files in <code>.kiro/hooks/</code></td></tr>
+<tr><td>Security</td><td>Snapshotted at session start — mid-session edits ignored</td><td>Live configuration in agent JSON</td></tr>
+<tr><td>Philosophy</td><td>Deterministic enforcement with granular control</td><td>AI-first automation, more accessible</td></tr>
+</table>
+
+<h2>Claude Code Hooks</h2>
+<p>Configured in <code>.claude/settings.json</code> with regex matchers against tool names:</p>
+<pre><code>{
+  "hooks": {
+    "PostToolUse": [{
+      "matcher": "Write|Edit|MultiEdit",
+      "hooks": [
+        { "type": "command", "command": "bun run format || true" }
+      ]
+    }],
+    "Stop": [{
+      "hooks": [{
+        "type": "prompt",
+        "prompt": "Analyze: $ARGUMENTS. Are all tasks complete?"
+      }]
+    }]
+  }
+}</code></pre>
+<p>Key capabilities unique to Claude Code hooks:</p>
+<ul>
+<li><strong>HTTP hooks</strong> — POST to external webhooks on tool use events</li>
+<li><strong>Prompt hooks</strong> — ask the LLM to analyze or verify after actions</li>
+<li><strong>Sub-agent hooks</strong> — spawn a dedicated agent for verification</li>
+<li><strong>Security snapshotting</strong> — hooks frozen at session start, preventing mid-session tampering</li>
+</ul>
+
+<h2>Kiro CLI Hooks</h2>
+<p>Configured in agent JSON with matcher strings:</p>
+<pre><code>{
+  "hooks": {
+    "agentSpawn": [
+      { "command": "git status" },
+      { "command": "cat .kiro/steering/tech.md" }
+    ],
+    "postToolUse": [
+      { "matcher": "fs_write", "command": "eslint --fix $KIRO_CHANGED_FILE" }
+    ],
+    "stop": [
+      { "command": "npm test" },
+      { "command": "git diff --stat" }
+    ]
+  }
+}</code></pre>
+<p>Key capabilities unique to Kiro hooks:</p>
+<ul>
+<li><strong>agentSpawn</strong> — run commands when the agent session starts (great for environment setup)</li>
+<li><strong>userPromptSubmit</strong> — trigger actions when the user sends a prompt</li>
+<li><strong>.kiro.hook files</strong> — individual hook files in <code>.kiro/hooks/</code>, creatable through natural language or a visual form in the IDE</li>
+<li><strong>File system events</strong> (IDE only) — trigger on save, create, delete</li>
+</ul>
+
+<h2>Common Hook Patterns</h2>
+<h3>Auto-format on file write</h3>
+<table>
+<tr><th>Claude Code</th><th>Kiro CLI</th></tr>
+<tr><td><pre><code>"PostToolUse": [{
+  "matcher": "Write",
+  "hooks": [{
+    "type": "command",
+    "command": "prettier --write $CLAUDE_FILE_PATHS"
+  }]
+}]</code></pre></td>
+<td><pre><code>"postToolUse": [{
+  "matcher": "fs_write",
+  "command": "prettier --write $KIRO_CHANGED_FILE"
+}]</code></pre></td></tr>
+</table>
+
+<h3>Run tests when agent finishes</h3>
+<table>
+<tr><th>Claude Code</th><th>Kiro CLI</th></tr>
+<tr><td><pre><code>"Stop": [{
+  "hooks": [{
+    "type": "command",
+    "command": "npm test"
+  }]
+}]</code></pre></td>
+<td><pre><code>"stop": [{
+  "command": "npm test"
+}]</code></pre></td></tr>
+</table>
+
+<div class="note">Claude Code hooks emphasize <strong>deterministic enforcement</strong> with granular control (tool input rewriting, permission decisions, HTTP webhooks). Kiro hooks emphasize <strong>AI-first automation</strong> where the default action is "ask the agent," making hooks more accessible but less predictable.</div>
+`},
+
+{id:"config-compared",title:"Config Files Compared",content:`
+<h1>Configuration Files Compared</h1>
+<p>Both tools use markdown files to give the AI persistent project knowledge, but the design philosophy differs significantly.</p>
+
+<h2>CLAUDE.md vs .kiro/steering/</h2>
+<table class="comparison">
+<tr><th>Feature</th><th>Claude Code</th><th>Kiro CLI</th></tr>
+<tr><td>Primary config</td><td><code>CLAUDE.md</code> (single file)</td><td><code>.kiro/steering/*.md</code> (multiple files)</td></tr>
+<tr><td>Global config</td><td><code>~/.claude/CLAUDE.md</code></td><td><code>~/.kiro/steering/</code></td></tr>
+<tr><td>Workspace config</td><td><code>/repo/CLAUDE.md</code></td><td><code>/repo/.kiro/steering/</code></td></tr>
+<tr><td>Personal overrides</td><td><code>CLAUDE.local.md</code></td><td>Workspace overrides global</td></tr>
+<tr><td>Modular rules</td><td><code>.claude/rules/*.md</code></td><td>Each steering file IS a rule</td></tr>
+<tr><td>Conditional loading</td><td>Not supported</td><td><code>fileMatch</code>, <code>always</code>, <code>manual</code> modes</td></tr>
+<tr><td>Team distribution</td><td>Git (commit CLAUDE.md)</td><td>Git + MDM/Group Policy push</td></tr>
+<tr><td>AGENTS.md support</td><td>Yes</td><td>Yes</td></tr>
+</table>
+
+<h2>Claude Code File Hierarchy</h2>
+<pre><code>~/.claude/CLAUDE.md              # Global (all projects)
+/repo/CLAUDE.md                  # Project root (git-managed, team-shared)
+/repo/CLAUDE.local.md            # Project personal (.gitignore recommended)
+/repo/subdir/CLAUDE.md           # Sub-directory (auto-loaded when cwd is that dir)
+/repo/.claude/rules/             # Modular rules (recent addition)
+    code-style.md
+    security.md
+    testing.md</code></pre>
+
+<h2>Kiro Steering File Hierarchy</h2>
+<pre><code>~/.kiro/steering/                # Global (all workspaces)
+/repo/.kiro/steering/            # Workspace-level
+    tech.md                      # Built-in: tech stack, frameworks
+    structure.md                 # Built-in: file organization, naming
+    api-design.md                # Custom: your API conventions
+    security.md                  # Custom: security policies
+    testing.md                   # Custom: testing standards</code></pre>
+
+<h2>Kiro Inclusion Modes</h2>
+<p>Kiro steering files use YAML frontmatter to control when they load — a feature Claude Code lacks:</p>
+<pre><code># Always loaded (default for foundation files)
+---
+inclusion: always
+---
+
+# Only loaded when editing matching files
+---
+inclusion: fileMatch
+fileMatchPattern: "**/*.test.ts"
+---
+
+# Never auto-loaded; referenced manually via #name in chat
+---
+inclusion: manual
+---</code></pre>
+<div class="note">Conditional loading is powerful for large projects. A <code>fileMatch</code> steering file for test patterns only loads when you're editing tests, keeping context lean the rest of the time.</div>
+
+<h2>AGENTS.md Standard</h2>
+<p>Both tools support the emerging <a href="https://agents.md">AGENTS.md</a> open standard. Drop an <code>AGENTS.md</code> file at the workspace root and it is always included by both tools.</p>
+<table>
+<tr><th>Placement</th><th>Claude Code</th><th>Kiro CLI</th></tr>
+<tr><td>Workspace root</td><td><code>/repo/AGENTS.md</code></td><td><code>/repo/AGENTS.md</code></td></tr>
+<tr><td>Global</td><td><code>~/.claude/AGENTS.md</code></td><td><code>~/.kiro/steering/AGENTS.md</code></td></tr>
+</table>
+
+<h2>Migration Checklist: CLAUDE.md → Kiro Steering</h2>
+<p>The main migration effort when moving between tools:</p>
+<ol>
+<li>Extract product context from CLAUDE.md → <code>.kiro/steering/product.md</code></li>
+<li>Extract tech stack info → <code>.kiro/steering/tech.md</code></li>
+<li>Extract project structure → <code>.kiro/steering/structure.md</code></li>
+<li>Extract coding conventions → <code>.kiro/steering/code-conventions.md</code></li>
+<li>Move <code>.claude/rules/*.md</code> files → <code>.kiro/steering/</code> (rename as needed)</li>
+<li>Copy skills directly: <code>cp -r .claude/skills/* .kiro/skills/</code></li>
+</ol>
+`},
+
+{id:"mcp-tools",title:"MCP & Tools Compared",content:`
+<h1>MCP & Built-in Tools Compared</h1>
+<p>Both tools support MCP (Model Context Protocol) for connecting external services, and both provide built-in tools for file operations, search, and shell access. The details differ in important ways.</p>
+
+<h2>Built-in Tools</h2>
+<table class="comparison">
+<tr><th>Capability</th><th>Claude Code</th><th>Kiro CLI</th></tr>
+<tr><td>File read</td><td><code>Read</code></td><td><code>read</code></td></tr>
+<tr><td>File write</td><td><code>Write</code></td><td><code>write</code> (with diff view)</td></tr>
+<tr><td>Shell commands</td><td><code>Bash</code></td><td><code>shell</code></td></tr>
+<tr><td>File search</td><td><code>Glob</code></td><td><code>glob</code> (respects .gitignore)</td></tr>
+<tr><td>Content search</td><td><code>Grep</code></td><td><code>grep</code> (respects .gitignore)</td></tr>
+<tr><td>Web search</td><td><code>WebSearch</code></td><td><code>web_search</code></td></tr>
+<tr><td>Web fetch</td><td><code>WebFetch</code></td><td><code>web_fetch</code> (full/markdown/text modes)</td></tr>
+<tr><td>Sub-agents</td><td><code>Task</code></td><td><code>delegate</code> + <code>subagent</code></td></tr>
+<tr><td>Todos</td><td><code>TodoRead</code> / <code>TodoWrite</code></td><td><code>todo</code></td></tr>
+<tr><td>Notebooks</td><td><code>NotebookRead</code> / <code>NotebookEdit</code></td><td>Not available</td></tr>
+<tr><td>Desktop control</td><td><code>ComputerUse</code> (experimental)</td><td>Not available</td></tr>
+<tr><td>AWS CLI</td><td>Via Bash</td><td><code>aws</code> (native tool)</td></tr>
+<tr><td>Code intelligence</td><td>Built-in</td><td><code>code_intelligence</code> (Tree-sitter/LSP)</td></tr>
+<tr><td>Introspection</td><td>Not available</td><td><code>introspect</code></td></tr>
+<tr><td>Knowledge base</td><td>Not available</td><td><code>knowledge</code> (vector-indexed)</td></tr>
+</table>
+
+<h2>MCP Server Configuration</h2>
+<h3>Claude Code</h3>
+<p>Config lives in <code>.mcp.json</code> at the project root (git-managed):</p>
+<pre><code>{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": { "GITHUB_TOKEN": "$GITHUB_TOKEN" }
+    },
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres"],
+      "env": { "DATABASE_URL": "$DATABASE_URL" }
+    }
+  }
+}</code></pre>
+<p>Management commands:</p>
+<pre><code>claude mcp add --transport stdio my-server node server.js
+claude mcp add --transport sse my-server https://api.example.com/mcp
+claude mcp list
+claude mcp remove my-server</code></pre>
+
+<h3>Kiro CLI</h3>
+<p>Config lives in <code>.kiro/mcp.json</code>:</p>
+<pre><code>{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"]
+    }
+  }
+}</code></pre>
+<p>Management commands:</p>
+<pre><code>kiro-cli mcp add
+kiro-cli mcp list
+kiro-cli mcp status
+kiro-cli mcp import    # Import from existing config
+kiro-cli mcp remove my-server</code></pre>
+
+<h2>Kiro Powers — Pre-Packaged MCP Bundles</h2>
+<p>Kiro offers "Powers" — curated MCP server bundles that include both the server and a steering file with best practices:</p>
+<pre><code># Install a Power (e.g., Stripe)
+kiro-cli powers install stripe
+# Adds: MCP server config + .kiro/steering/stripe.md</code></pre>
+<p>Available Powers include: Datadog, Figma, Stripe, Supabase, AWS, Sentry, GitHub, and more.</p>
+<div class="note">Claude Code has no equivalent to Powers — you configure each MCP server and write steering files manually. Powers lower the barrier to entry for common integrations.</div>
+
+<h2>Tool Permissions Compared</h2>
+<h3>Claude Code — settings.json</h3>
+<pre><code>{
+  "permissions": {
+    "allow": [
+      "Bash(git status:*)",
+      "Bash(npm test:*)",
+      "Read(**)",
+      "Write(src/**)"
+    ],
+    "deny": [
+      "Bash(git push:*)",
+      "Write(.env*)"
+    ]
+  }
+}</code></pre>
+
+<h3>Kiro CLI — Agent config</h3>
+<pre><code>{
+  "tools": ["read", "write", "shell"],
+  "allowedTools": ["read"],
+  "toolsSettings": {
+    "shell": {
+      "allowedCommands": ["npm test", "git status"],
+      "deniedCommands": ["git push .*", "rm -rf .*"],
+      "autoAllowReadonly": true
+    },
+    "write": {
+      "allowedPaths": ["./src/**"],
+      "deniedPaths": ["./.env*", "./secrets/**"]
+    }
+  }
+}</code></pre>
+<div class="note">Claude Code uses glob-style <code>Tool(pattern)</code> syntax in a centralized permissions object. Kiro uses per-tool settings objects in agent configs, with separate <code>allowedCommands</code>/<code>deniedCommands</code> arrays — more verbose but also more explicit.</div>
+
+<h2>Referencing MCP Tools in Agent Configs</h2>
+<table>
+<tr><th>Pattern</th><th>Claude Code (skills)</th><th>Kiro CLI (agent JSON)</th></tr>
+<tr><td>Specific MCP tool</td><td><code>mcp__jira__create_issue</code></td><td><code>@jira/create_issue</code></td></tr>
+<tr><td>All tools from server</td><td><code>mcp__jira__*</code></td><td><code>@jira</code></td></tr>
+<tr><td>In skill/agent config</td><td><code>allowed-tools:</code> in SKILL.md frontmatter</td><td><code>"tools":</code> array in agent JSON</td></tr>
+</table>
+`}
+];
+
 // Merge all sections
-const ALL_SECTIONS = [...SECTIONS, ...SECTIONS2, ...SECTIONS3];
+const ALL_SECTIONS = [...SECTIONS, ...SECTIONS2, ...SECTIONS3, ...SECTIONS4];
