@@ -3,7 +3,9 @@ const SECTIONS = [
 <h1>Getting Started with Kiro CLI</h1>
 <p>Kiro CLI is an AI-powered coding assistant that runs in your terminal. It provides agentic capabilities including code generation, file manipulation, shell commands, and integration with MCP servers.</p>
 <h2>Installation</h2>
-<pre><code>npm install -g @anthropic-ai/kiro-cli</code></pre>
+<pre><code># Install Kiro CLI
+curl -fsSL https://cli.kiro.dev/install | bash</code></pre>
+<div class="note">Kiro is built by Amazon (AWS). For the full IDE, download from <a href="https://kiro.dev">kiro.dev</a>. The CLI is the terminal-only interface.</div>
 <h2>Starting a Chat Session</h2>
 <pre><code># Basic interactive session
 kiro-cli chat
