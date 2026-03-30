@@ -1,11 +1,12 @@
 const SECTIONS = [
 {id:"intro",title:"Getting Started",content:`
 <h1>Getting Started with Kiro CLI</h1>
-<p>Kiro CLI is an AI-powered coding assistant that runs in your terminal. It provides agentic capabilities including code generation, file manipulation, shell commands, and integration with MCP servers.</p>
+<p>Kiro CLI is the terminal interface to <strong>Kiro</strong>, Amazon's agentic AI development environment. Born from the Amazon Q Developer CLI, Kiro CLI brings spec-driven development, custom agents, semantic search, and MCP integrations straight to your command line — no IDE required. It runs on Anthropic's Claude models via AWS Bedrock, supporting everything from Haiku to Opus.</p>
+<p>Whether you're a terminal purist who lives in tmux, a CI/CD pipeline builder, or someone who prefers keyboard-driven workflows over mouse clicks, Kiro CLI gives you the full power of Kiro's agentic capabilities without leaving your shell.</p>
 <h2>Installation</h2>
 <pre><code># Install Kiro CLI
 curl -fsSL https://cli.kiro.dev/install | bash</code></pre>
-<div class="note">Kiro is built by Amazon (AWS). For the full IDE, download from <a href="https://kiro.dev">kiro.dev</a>. The CLI is the terminal-only interface.</div>
+<div class="note">Kiro is built by Amazon (AWS), announced at AWS Summit NYC in July 2025. The CLI launched November 2025 as the successor to Amazon Q Developer CLI. For the full IDE experience, download from <a href="https://kiro.dev">kiro.dev</a>.</div>
 <h2>Starting a Chat Session</h2>
 <pre><code># Basic interactive session
 kiro-cli chat
@@ -37,11 +38,14 @@ kiro-cli chat --resume</code></pre>
 <tr><td><code>Ctrl+R</code></td><td>Search command history</td></tr>
 <tr><td><code>Up/Down</code></td><td>Navigate command history</td></tr>
 </table>
+<hr>
+<p><small><strong>References:</strong> <a href="https://kiro.dev/docs/getting-started/installation/">Kiro Installation Guide</a> · <a href="https://kiro.dev">kiro.dev</a> · <a href="https://cli.kiro.dev/install">CLI Installer Script</a></small></p>
 `},
 
 {id:"slash-overview",title:"Slash Commands Overview",content:`
 <h1>All Slash Commands</h1>
-<p>Slash commands start with <code>/</code> and provide shortcuts for common tasks inside an interactive chat session.</p>
+<p>Slash commands are your keyboard-driven control panel inside a Kiro CLI chat session. Instead of navigating menus or remembering CLI flags, you type <code>/</code> followed by a command name to instantly switch agents, manage context, control tools, and more. Power users can chain these with natural language prompts to build complex workflows entirely from the keyboard.</p>
+<p>Here's the complete reference — bookmark this page and come back when you need it.</p>
 <table>
 <tr><th>Command</th><th>Purpose</th></tr>
 <tr><td><code class="cmd">/help</code></td><td>Switch to Help Agent or show help text</td></tr>
@@ -71,11 +75,13 @@ kiro-cli chat --resume</code></pre>
 <tr><td><code class="cmd">/logdump</code></td><td>Create log archive for support</td></tr>
 <tr><td><code class="cmd">/changelog</code></td><td>View CLI changelog</td></tr>
 </table>
+<hr>
+<p><small><strong>References:</strong> <a href="https://kiro.dev/docs/cli/reference/cli-commands/">Kiro CLI Commands Reference</a></small></p>
 `},
 
 {id:"cmd-help",title:"/help",content:`
 <h1>/help — Get Help</h1>
-<p>Switch to the Help Agent to ask questions about Kiro CLI features, or display classic help text.</p>
+<p>Stuck on how something works? The <code>/help</code> command switches you to a dedicated Help Agent that knows the Kiro CLI inside and out. Ask it anything — from configuring MCP servers to writing custom agents. It's like having the documentation available as a conversation partner. For those who prefer traditional text output, <code>--legacy</code> mode prints classic help instead.</p>
 <pre><code># Switch to Help Agent (interactive)
 /help
 
@@ -87,11 +93,13 @@ kiro-cli chat --resume</code></pre>
 
 # Help for a specific command
 /help --legacy /context</code></pre>
+<hr>
+<p><small><strong>References:</strong> <a href="https://kiro.dev/docs/cli/reference/cli-commands/">Kiro CLI Commands</a></small></p>
 `},
 
 {id:"cmd-context",title:"/context",content:`
 <h1>/context — Manage Context</h1>
-<p>Context rules determine which files are included in your Kiro session. They are derived from the current active agent.</p>
+<p>AI assistants are only as good as the context they can see. The <code>/context</code> command lets you control exactly which files and directories Kiro can access during your session — add specific source files, glob patterns for entire directories, or remove rules that are pulling in too much noise. This is especially useful when working in large monorepos where you want Kiro focused on just the module you're touching.</p>
 <pre><code># Show context rules and matched files
 /context show
 
@@ -108,11 +116,13 @@ kiro-cli chat --resume</code></pre>
 # Remove all rules
 /context clear</code></pre>
 <div class="note">Context changes are NOT preserved between sessions. To make them permanent, edit the agent config file.</div>
+<hr>
+<p><small><strong>References:</strong> <a href="https://kiro.dev/docs/chat/">Kiro Chat Documentation</a> — see context providers section</small></p>
 `},
 
 {id:"cmd-model",title:"/model",content:`
 <h1>/model — Select AI Model</h1>
-<p>Choose which AI model to use for the current session.</p>
+<p>Different tasks call for different models. Quick code formatting? A fast model like Haiku keeps latency low. Complex architecture decisions? Switch to Opus for deeper reasoning. The <code>/model</code> command lets you swap models mid-session without restarting, so you can match the AI's capabilities to the complexity of what you're working on. Kiro CLI supports the full range of Claude models available through AWS Bedrock.</p>
 <pre><code># Open interactive model picker
 /model
 
@@ -125,11 +135,13 @@ kiro-cli chat --resume</code></pre>
 # Save current model as default for all future sessions
 /model set-current-as-default</code></pre>
 <div class="note">The default model is saved to <code>~/.kiro/settings/cli.json</code>.</div>
+<hr>
+<p><small><strong>References:</strong> Kiro supports Claude models via <a href="https://aws.amazon.com/bedrock/">AWS Bedrock</a></small></p>
 `},
 
 {id:"cmd-agent",title:"/agent",content:`
 <h1>/agent — Manage Agents</h1>
-<p>Create, edit, list, and switch between agent configurations.</p>
+<p>Agents are Kiro's most powerful abstraction. Each agent is a self-contained personality with its own system prompt, tool permissions, MCP server access, steering files, and even keyboard shortcuts. You might have a <code>security-reviewer</code> agent that can only read files, a <code>deployer</code> agent with AWS access, and a <code>frontend</code> agent loaded with your component library docs. The <code>/agent</code> command lets you create, edit, swap between, and manage these specialized configurations on the fly.</p>
 <pre><code># List all available agents
 /agent list
 
@@ -166,11 +178,13 @@ kiro-cli chat --resume</code></pre>
 <tr><td>Global (user-wide)</td><td><code>~/.kiro/agents/</code></td></tr>
 </table>
 <div class="note">Local agents take precedence over global agents with the same name.</div>
+<hr>
+<p><small><strong>References:</strong> <a href="https://kiro.dev/docs/cli/reference/cli-commands/">Kiro CLI Commands</a> — agent subcommands</small></p>
 `},
 
 {id:"cmd-chat",title:"/chat",content:`
 <h1>/chat — Session Management</h1>
-<p>Manage chat sessions. Kiro auto-saves all sessions on every conversation turn.</p>
+<p>Long debugging sessions, multi-day feature builds, exploratory research — you don't want to lose that context. Kiro auto-saves every conversation turn, and the <code>/chat</code> command gives you full control over your session history. Start fresh conversations, resume previous ones with an interactive picker, or save/load sessions to specific files for sharing with teammates or archiving important decisions.</p>
 <pre><code># Start fresh conversation
 /chat new
 
@@ -192,11 +206,13 @@ kiro-cli chat --resume</code></pre>
 # Custom load via script
 /chat load-via-script ./scripts/load-from-git.sh</code></pre>
 <div class="note">Sessions are stored per-directory, so each project has its own set of sessions.</div>
+<hr>
+<p><small><strong>References:</strong> <a href="https://kiro.dev/docs/cli/reference/cli-commands/">Kiro CLI Commands</a> — chat subcommands</small></p>
 `},
 
 {id:"cmd-tools",title:"/tools",content:`
 <h1>/tools — Tool Permissions</h1>
-<p>View available tools and manage trust levels. By default, Kiro asks for confirmation before using certain tools.</p>
+<p>Security matters when an AI agent can execute shell commands and write files on your machine. Kiro's trust system defaults to asking permission before using potentially dangerous tools, but power users can selectively trust specific tools or go fully autonomous with <code>trust-all</code>. The <code>/tools</code> command shows you exactly what tools are available, their token costs, and their current permission level — giving you fine-grained control over what Kiro can do without asking first.</p>
 <pre><code># View all tools with token counts and permissions
 /tools
 
@@ -231,11 +247,13 @@ kiro-cli chat --trust-all-tools
 # Trust specific tools at startup
 kiro-cli chat --trust-tools=fs_read,grep,execute_bash</code></pre>
 <div class="note">Trust changes via <code>/tools</code> are session-only. For permanent trust, add tools to your agent's <code>allowedTools</code> config.</div>
+<hr>
+<p><small><strong>References:</strong> <a href="https://kiro.dev/docs/privacy-and-security/">Kiro Privacy & Security</a> — Autopilot vs Supervised modes, Trusted Commands</small></p>
 `},
 
 {id:"cmd-code",title:"/code",content:`
 <h1>/code — Code Intelligence (LSP)</h1>
-<p>LSP-powered code intelligence for semantic understanding. Supports TypeScript, Rust, Python, Go, Java, Ruby, C/C++.</p>
+<p>Raw text search only gets you so far. The <code>/code</code> command activates LSP-powered code intelligence, giving Kiro semantic understanding of your codebase — function signatures, type definitions, cross-file references, and symbol resolution. This means Kiro can answer questions like "what calls this function?" or "show me all implementations of this interface" with precision, not guesswork. Supports TypeScript, Rust, Python, Go, Java, Ruby, and C/C++.</p>
 <pre><code># Initialize LSP in current directory
 /code init
 
@@ -258,11 +276,13 @@ kiro-cli chat --trust-tools=fs_read,grep,execute_bash</code></pre>
 /code logs -l DEBUG -n 100
 /code logs -p ./lsp-logs.json</code></pre>
 <div class="note">Disable by deleting <code>.kiro/settings/lsp.json</code>. Re-enable anytime with <code>/code init</code>.</div>
+<hr>
+<p><small><strong>References:</strong> <a href="https://kiro.dev/docs/getting-started/first-project/">Kiro First Project Guide</a> — language support section</small></p>
 `},
 
 {id:"cmd-checkpoint",title:"/checkpoint",content:`
 <h1>/checkpoint — Workspace Snapshots</h1>
-<p>Track and restore file changes using git-based checkpoints.</p>
+<p>Letting an AI write code is exciting until it breaks something you didn't back up. Checkpoints are your safety net — git-based snapshots of your workspace that let you roll back to any previous state with a single command. Create a checkpoint before a risky refactor, let Kiro go wild, then restore if the result isn't what you wanted. Think of it as unlimited undo for your entire project, not just a single file.</p>
 <pre><code># Create a snapshot
 /checkpoint init
 
@@ -287,11 +307,13 @@ kiro-cli chat --trust-tools=fs_read,grep,execute_bash</code></pre>
 # Clean up checkpoint data
 /checkpoint clean</code></pre>
 <div class="note warn">Experimental feature. Enable with: <code>kiro-cli settings chat.enableCheckpoint true</code></div>
+<hr>
+<p><small><strong>References:</strong> Checkpoints use git under the hood — your project must be in a git repo</small></p>
 `},
 
 {id:"cmd-knowledge",title:"/knowledge",content:`
 <h1>/knowledge — Semantic Search</h1>
-<p>Index files and directories for semantic search across your project.</p>
+<p>Large projects have thousands of files, and even the best AI can't read them all at once. The <code>/knowledge</code> command creates a vector-indexed semantic search layer over your codebase and docs — meaning Kiro can find relevant code not by filename or grep patterns, but by <em>meaning</em>. Ask "how does authentication work?" and it pulls the right files from across your entire project, even if the word "authentication" never appears in the filename.</p>
 <pre><code># Show all knowledge base entries
 /knowledge show
 
@@ -319,10 +341,13 @@ kiro-cli chat --trust-tools=fs_read,grep,execute_bash</code></pre>
 # Cancel background indexing
 /knowledge cancel</code></pre>
 <div class="note warn">Experimental feature. Enable with: <code>kiro-cli settings chat.enableKnowledge true</code></div>
+<hr>
+<p><small><strong>References:</strong> <a href="https://kiro.dev/docs/skills/">Kiro Skills & Knowledge Documentation</a></small></p>
 `},
 
 {id:"cmd-misc",title:"Other Commands",content:`
 <h1>Other Slash Commands</h1>
+<p>Beyond the major features, Kiro CLI packs a collection of smaller but useful commands for composing prompts, exploring side topics, managing todos, and debugging issues. Here's the quick reference for everything else.</p>
 
 <h2>/editor</h2>
 <p>Opens <code>$EDITOR</code> (defaults to vi) to compose a multi-line prompt. Save and exit to send.</p>
@@ -382,6 +407,8 @@ kiro-cli chat --trust-tools=fs_read,grep,execute_bash</code></pre>
 
 <h2>/issue</h2>
 <p>Create a GitHub issue or feature request for the Kiro team.</p>
+<hr>
+<p><small><strong>References:</strong> <a href="https://kiro.dev/docs/cli/reference/cli-commands/">Kiro CLI Commands Reference</a> · <a href="https://kiro.dev/docs/chat/">Chat Documentation</a></small></p>
 `}
 ];
 
@@ -470,6 +497,8 @@ fileMatchPattern: "components/**/*.tsx"
 <pre><code>{
   "resources": ["file://.kiro/steering/**/*.md"]
 }</code></pre>
+<hr>
+<p><small><strong>References:</strong> <a href="https://kiro.dev/docs/steering/">Kiro Steering Documentation</a> · <a href="https://agents.md">AGENTS.md Standard</a></small></p>
 `},
 
 {id:"agents-config",title:"Agent Configuration",content:`
@@ -575,6 +604,8 @@ fileMatchPattern: "components/**/*.tsx"
   "keyboardShortcut": "ctrl+shift+r",
   "welcomeMessage": "Ready for AWS and Rust!"
 }</code></pre>
+<hr>
+<p><small><strong>References:</strong> <a href="https://kiro.dev/docs/cli/reference/cli-commands/">Kiro CLI Commands</a> — agent subcommands · Agent configs stored in <code>.kiro/agents/</code> (workspace) or <code>~/.kiro/agents/</code> (global)</small></p>
 `}
 ];
 
@@ -624,6 +655,8 @@ US-1: As a user, I want to sign up with email/password
 US-2: As a user, I want to log in with OAuth2
   - AC-2.1: Google OAuth2 flow completes in under 3 seconds
   - AC-2.2: New OAuth users get accounts auto-created</code></pre>
+<hr>
+<p><small><strong>References:</strong> <a href="https://kiro.dev/docs/specs/">Kiro Specs Documentation</a> · <a href="https://kiro.dev/docs/specs/feature-specs/">Feature Specs</a> · <a href="https://kiro.dev/docs/specs/bugfix-specs/">Bugfix Specs</a></small></p>
 `},
 
 {id:"comparison",title:"Kiro CLI vs Claude Code",content:`
@@ -669,11 +702,13 @@ US-2: As a user, I want to log in with OAuth2
 <li>Checkpoint system provides git-based workspace snapshots</li>
 <li>Tangent mode lets you explore side topics without losing main context</li>
 </ul>
+<hr>
+<p><small><strong>References:</strong> <a href="https://kiro.dev/docs/">Kiro Documentation</a> · <a href="https://code.claude.com/docs">Claude Code Documentation</a></small></p>
 `},
 
 {id:"settings",title:"Settings Reference",content:`
 <h1>Settings Reference</h1>
-<p>Manage settings via the terminal command <code>kiro-cli settings</code> (not a slash command).</p>
+<p>Kiro CLI's behavior is controlled through a settings system that governs everything from which experimental features are enabled to API timeouts and default models. Unlike slash commands that affect only the current session, settings persist across all future sessions. Use <code>kiro-cli settings</code> from the terminal (not from inside a chat session) to read and write configuration values.</p>
 <pre><code># Set a setting
 kiro-cli settings chat.enableThinking true
 
@@ -702,10 +737,13 @@ kiro-cli settings chat.enableThinking</code></pre>
 <tr><td><code>mcp.initTimeout</code></td><td>number</td><td>MCP server init timeout</td></tr>
 <tr><td><code>app.disableAutoupdates</code></td><td>bool</td><td>Disable auto-updates</td></tr>
 </table>
+<hr>
+<p><small><strong>References:</strong> Settings are stored in <code>~/.kiro/settings/cli.json</code></small></p>
 `},
 
 {id:"workflows",title:"Common Workflows",content:`
 <h1>Common Workflows</h1>
+<p>Theory is one thing — here's how developers actually use Kiro CLI day-to-day. These workflows combine multiple features (agents, specs, context, checkpoints, knowledge bases) into practical recipes you can copy and adapt for your own projects. Each one starts with the exact commands you'd type.</p>
 
 <h2>1. New Project Setup</h2>
 <pre><code># Start Kiro
@@ -770,6 +808,8 @@ kiro-cli chat --no-interactive --trust-all-tools \\
 
 # Search semantically
 /knowledge search "how does authentication work"</code></pre>
+<hr>
+<p><small><strong>References:</strong> <a href="https://kiro.dev/docs/getting-started/first-project/">Your First Project Guide</a> · <a href="https://kiro.dev/docs/specs/">Specs Documentation</a> · <a href="https://kiro.dev/docs/hooks/">Hooks Documentation</a></small></p>
 `}
 ];
 
