@@ -1,5 +1,60 @@
 # Changelog — QA & Bug Fix Log
 
+## QA Cycle 4 — Link & Command Verification Pass 1 (2026-03-28)
+
+Verified all external links (10 URLs) and all CLI commands against official sources.
+
+### Links Verified
+| URL | Status |
+|-----|--------|
+| https://kiro.dev | OK (200) |
+| https://cli.kiro.dev/install | OK (200) — returns bash installer, confirms binary name is `kiro-cli` |
+| https://docs.anthropic.com/en/docs/claude-code | Redirect → code.claude.com/docs (fixed URL) |
+| https://agentskills.io | OK (200) |
+| https://agents.md | OK (200) |
+| https://kiro.dev/docs/skills/ | OK (200) |
+| https://kiro.dev/docs/powers/ | OK (200) |
+| https://kiro.dev/docs/hooks/types/ | OK (200) |
+| https://kiro.dev/docs/hooks/actions/ | OK (200) |
+| https://kiro.dev/docs/mcp/configuration/ | OK (200) |
+
+### Commands Verified
+- `kiro-cli` — confirmed as actual binary name from installer script
+- `kiro-cli translate` — confirmed real subcommand (NL → shell)
+- `claude mcp add/list/remove` — confirmed real Claude Code commands
+- `--dangerously-skip-permissions` — confirmed real Claude Code flag
+- `--trust-all-tools` — confirmed real Kiro CLI flag
+
+### Bugs Found & Fixed
+
+| # | Section | Bug | Fix |
+|---|---------|-----|-----|
+| 24 | sources | Claude Code docs URL `docs.anthropic.com/en/docs/claude-code` redirects twice | Changed to direct URL `code.claude.com/docs` |
+| 25 | hooks-deep-dive | Stated Claude Code has "4 core events" | Fixed: Claude Code has **23 event types** across 5 categories (Lifecycle, Tool, Subagent, File/Config, Other) |
+| 26 | hooks-deep-dive | Listed all 23 Claude Code event types incorrectly as just 4 | Added full categorized list: SessionStart/End, UserPromptSubmit, Stop, SubagentStart/Stop, FileChanged, CwdChanged, etc. |
+| 27 | hooks-deep-dive | Used fake `$CLAUDE_FILE_PATHS` env var in hook example | Fixed: Claude Code uses `CLAUDE_PROJECT_DIR`, `CLAUDE_ENV_FILE`, `CLAUDE_CODE_REMOTE` — no file paths env var |
+| 28 | hooks-deep-dive | Used unverified `$KIRO_CHANGED_FILE` env var | Changed to `$FILE` (illustrative) |
+| 29 | comparison | "Hooks/automation" row said "(4 events)" for Claude Code | Fixed to "(23 event types)" |
+
+---
+
+## QA Cycle 5 — Final Link & Command Review Pass 2 (2026-03-28)
+
+Final sweep of all remaining content.
+
+### Verified
+- All `<pre>` tags balanced (58/58)
+- All `<table>` tags balanced (22/22)
+- JS syntax valid (`node -c data.js` passes)
+- Model names (`claude-sonnet-4`, `claude-opus-4.6`) — present in original tutorial, used as Kiro CLI model identifiers
+- `$EDITOR` env var in /editor section — standard Unix env var, correct
+- MCP config `$GITHUB_TOKEN` / `$DATABASE_URL` — standard env var patterns, correct
+- Agent JSON hook event names (`agentSpawn`, `userPromptSubmit`, `preToolUse`, `postToolUse`, `stop`) — CLI-specific format, appropriate for a Kiro CLI tutorial
+
+### No additional bugs found in Pass 2
+
+---
+
 ## QA Cycle 1 — Fact-Check Against Official Kiro Docs (2026-03-28)
 
 Cross-referenced all tutorial sections against https://kiro.dev/docs/ official documentation.

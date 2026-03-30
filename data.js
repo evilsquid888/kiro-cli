@@ -654,7 +654,7 @@ US-2: As a user, I want to log in with OAuth2
 <tr><td>Knowledge base</td><td>N/A</td><td><code>/knowledge</code></td></tr>
 <tr><td>Tangent mode</td><td>N/A</td><td><code>/tangent</code> or <code>Ctrl+T</code></td></tr>
 <tr><td>Agent switching</td><td>N/A</td><td><code>/agent swap</code></td></tr>
-<tr><td>Hooks/automation</td><td>Hooks in settings.json (4 events)</td><td>Agent hooks (10 trigger types) + Kiro panel UI</td></tr>
+<tr><td>Hooks/automation</td><td>Hooks in settings.json (23 event types)</td><td>Agent hooks (10 trigger types) + Kiro panel UI</td></tr>
 <tr><td>Prompt templates</td><td>N/A</td><td><code>/prompts</code> + <code>@prompt-name</code></td></tr>
 <tr><td>Context providers</td><td>N/A</td><td><code>#codebase</code>, <code>#file</code>, <code>#git diff</code>, <code>#terminal</code>, <code>#url</code>, <code>#spec</code>, etc. (IDE)</td></tr>
 <tr><td>Execution modes</td><td>Permissions-based</td><td>Autopilot (autonomous) or Supervised (approval at each step)</td></tr>
@@ -808,7 +808,7 @@ const SECTIONS4 = [
 <tr><td>Session persistence</td><td>Automatic</td><td>Manual save/load + resume picker</td></tr>
 </table>
 <hr>
-<p><small><strong>Sources:</strong> <a href="https://kiro.dev/docs/">Kiro Official Documentation</a> · <a href="https://docs.anthropic.com/en/docs/claude-code">Claude Code Documentation</a> · Research analysis from project compass artifact and kiro-vs-claude-code-technical.md</small></p>
+<p><small><strong>Sources:</strong> <a href="https://kiro.dev/docs/">Kiro Official Documentation</a> · <a href="https://code.claude.com/docs">Claude Code Documentation</a> · Research analysis from project compass artifact and kiro-vs-claude-code-technical.md</small></p>
 `},
 
 {id:"skills-portability",title:"Skills & Portability",content:`
@@ -901,7 +901,7 @@ cp -r .kiro/skills/my-skill .claude/skills/</code></pre>
 <h2>At a Glance</h2>
 <table class="comparison">
 <tr><th>Aspect</th><th>Claude Code</th><th>Kiro CLI</th></tr>
-<tr><td>Hook events</td><td>4 core events (PreToolUse, PostToolUse, Notification, Stop)</td><td>10 trigger types (Prompt Submit, Agent Stop, Pre/Post Tool Use, File Create/Save/Delete, Pre/Post Task Execution, Manual Trigger)</td></tr>
+<tr><td>Hook events</td><td>23 event types (PreToolUse, PostToolUse, Stop, SessionStart/End, SubagentStart/Stop, FileChanged, and more)</td><td>10 trigger types (Prompt Submit, Agent Stop, Pre/Post Tool Use, File Create/Save/Delete, Pre/Post Task Execution, Manual Trigger)</td></tr>
 <tr><td>Handler types</td><td>4 types: shell command, LLM prompt, sub-agent, HTTP endpoint</td><td>2 types: shell command ("Run Command"), agent prompt ("Ask Kiro")</td></tr>
 <tr><td>Config location</td><td><code>.claude/settings.json</code> (4 scope levels)</td><td><code>.kiro.hook</code> files in <code>.kiro/hooks/</code> or via the Kiro panel UI</td></tr>
 <tr><td>Security</td><td>Snapshotted at session start — mid-session edits ignored</td><td>Live configuration, editable via panel UI</td></tr>
@@ -921,17 +921,26 @@ cp -r .kiro/skills/my-skill .claude/skills/</code></pre>
     "Stop": [{
       "hooks": [{
         "type": "prompt",
-        "prompt": "Analyze: $ARGUMENTS. Are all tasks complete?"
+        "prompt": "Analyze: are all tasks complete?"
       }]
     }]
   }
 }</code></pre>
+<p>Claude Code supports <strong>23 hook event types</strong> across 5 categories:</p>
+<ul>
+<li><strong>Lifecycle:</strong> SessionStart, SessionEnd, UserPromptSubmit, Stop, StopFailure</li>
+<li><strong>Tool:</strong> PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest</li>
+<li><strong>Subagent:</strong> SubagentStart, SubagentStop, TeammateIdle, TaskCreated, TaskCompleted</li>
+<li><strong>File/Config:</strong> FileChanged, CwdChanged, ConfigChange, InstructionsLoaded, WorktreeCreate, WorktreeRemove</li>
+<li><strong>Other:</strong> PreCompact, PostCompact, Notification</li>
+</ul>
 <p>Key capabilities unique to Claude Code hooks:</p>
 <ul>
-<li><strong>HTTP hooks</strong> — POST to external webhooks on tool use events</li>
-<li><strong>Prompt hooks</strong> — ask the LLM to analyze or verify after actions</li>
-<li><strong>Sub-agent hooks</strong> — spawn a dedicated agent for verification</li>
+<li><strong>HTTP hooks</strong> — POST to external webhooks on any event</li>
+<li><strong>Prompt hooks</strong> — single-turn LLM evaluation (yes/no decisions)</li>
+<li><strong>Agent hooks</strong> — multi-turn subagent verification</li>
 <li><strong>Security snapshotting</strong> — hooks frozen at session start, preventing mid-session tampering</li>
+<li><strong>Environment variables:</strong> <code>CLAUDE_PROJECT_DIR</code>, <code>CLAUDE_ENV_FILE</code>, <code>CLAUDE_CODE_REMOTE</code></li>
 </ul>
 
 <h2>Kiro Hooks</h2>
@@ -943,7 +952,7 @@ cp -r .kiro/skills/my-skill .claude/skills/</code></pre>
       { "command": "cat .kiro/steering/tech.md" }
     ],
     "postToolUse": [
-      { "matcher": "fs_write", "command": "eslint --fix $KIRO_CHANGED_FILE" }
+      { "matcher": "fs_write", "command": "eslint --fix $FILE" }
     ],
     "stop": [
       { "command": "npm test" },
@@ -970,12 +979,12 @@ cp -r .kiro/skills/my-skill .claude/skills/</code></pre>
   "matcher": "Write",
   "hooks": [{
     "type": "command",
-    "command": "prettier --write $CLAUDE_FILE_PATHS"
+    "command": "prettier --write ."
   }]
 }]</code></pre></td>
 <td><pre><code>"postToolUse": [{
   "matcher": "fs_write",
-  "command": "prettier --write $KIRO_CHANGED_FILE"
+  "command": "prettier --write $FILE"
 }]</code></pre></td></tr>
 </table>
 
